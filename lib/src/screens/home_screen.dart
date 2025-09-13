@@ -1,44 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/carrinho_provider.dart';
+import '../providers/cardapio_provider.dart';
 import '../models/pizza.dart';
-import '../data/pizzas_data.dart';
 import '../widgets/pizza_card.dart';
 import '../widgets/custom_leading.dart';
 import 'pizza_details_screen.dart';
 import 'carrinho_screen.dart';
 
-// Componente SEM estado (StatelessWidget)
-class HomeScreen extends StatelessWidget {
+// Componente COM estado para gerenciar carregamento inicial
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  // Lista de pizzas disponíveis
-  final List<Pizza> listaPizzas = const [
-    Pizza(
-      id: '1',
-      nome: 'Moda da Casa',
-      descricao: 'Molho de tomate, mussarela, manjericão fresco, Ingrediente secreto',
-      preco: 32.90,
-      imagemUrl: 'assets/images/pizza.jfif',
-      ingredientes: ['Molho de tomate', 'Mussarela', 'Manjericão', 'Ingrediente secreto'],
-    ),
-    Pizza(
-      id: '2',
-      nome: 'Pepperoni',
-      descricao: 'Molho de tomate, mussarela, pepperoni',
-      preco: 38.90,
-      imagemUrl: 'assets/images/pizza.jfif',
-      ingredientes: ['Molho de tomate', 'Mussarela', 'Pepperoni'],
-    ),
-    Pizza(
-      id: '3',
-      nome: 'Quatro Queijos',
-      descricao: 'Mussarela, gorgonzola, parmesão, provolone',
-      preco: 42.90,
-      imagemUrl: 'assets/images/pizza.jfif',
-      ingredientes: ['Mussarela', 'Gorgonzola', 'Parmesão', 'Provolone'],
-    ),
-  ];
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Carrega as pizzas quando a tela é inicializada
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CardapioProvider>().fetchPizzas();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -157,24 +143,167 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-            // Lista de pizzas (demonstrando ListView)
+            // Lista de pizzas com gerenciamento de estado
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: listaPizzas.length,
-                itemBuilder: (context, index) {
-                  final pizza = listaPizzas[index];
-                  return PizzaCard(
-                    pizza: pizza,
-                    onTap: () {
-                      // Navegação para tela de detalhes
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PizzaDetailsScreen(pizza: pizza),
+              child: Consumer<CardapioProvider>(
+                builder: (context, cardapioProvider, child) {
+                  if (cardapioProvider.state == CardapioState.Loading) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Carregando cardápio...',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (cardapioProvider.state == CardapioState.Error) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.red.shade300,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Ops! Algo deu errado',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            cardapioProvider.errorMessage,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () => cardapioProvider.fetchPizzas(),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Tentar Novamente'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade700,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (cardapioProvider.state == CardapioState.Success && cardapioProvider.pizzas.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.local_pizza_outlined,
+                            size: 64,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Nenhuma pizza encontrada',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Verifique sua conexão e tente novamente',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    children: [
+                      // Banner informativo quando usando dados locais
+                      if (cardapioProvider.usingLocalData)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange.shade300),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.wifi_off,
+                                color: Colors.orange.shade700,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Modo offline - Cardápio local carregado',
+                                  style: TextStyle(
+                                    color: Colors.orange.shade700,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      );
-                    },
+                      // Lista de pizzas
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: () => cardapioProvider.fetchPizzas(),
+                          color: Colors.red.shade700,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: cardapioProvider.pizzas.length,
+                            itemBuilder: (context, index) {
+                              final pizza = cardapioProvider.pizzas[index];
+                              return PizzaCard(
+                                pizza: pizza,
+                                onTap: () {
+                                  // Navegação para tela de detalhes
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PizzaDetailsScreen(pizza: pizza),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),

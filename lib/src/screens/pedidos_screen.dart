@@ -4,9 +4,24 @@ import '../providers/carrinho_provider.dart';
 import '../models/pedido.dart';
 import '../widgets/custom_leading.dart';
 
-// Componente SEM estado (StatelessWidget)
-class PedidosScreen extends StatelessWidget {
+// Componente COM estado (StatefulWidget) para carregar pedidos da API
+class PedidosScreen extends StatefulWidget {
   const PedidosScreen({super.key});
+
+  @override
+  State<PedidosScreen> createState() => _PedidosScreenState();
+}
+
+class _PedidosScreenState extends State<PedidosScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Carrega pedidos da API quando a tela é inicializada
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final carrinho = Provider.of<CarrinhoProvider>(context, listen: false);
+      carrinho.carregarPedidosDaAPI();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,8 +98,32 @@ class PedidosScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               itemCount: carrinho.pedidos.length,
               itemBuilder: (context, index) {
-                final pedido = carrinho.pedidos.reversed.toList()[index];
-                return _buildPedidoCard(context, pedido, carrinho);
+                try {
+                  // Proteção contra RangeError
+                  if (index >= carrinho.pedidos.length) {
+                    return const SizedBox.shrink();
+                  }
+                  
+                  final pedidosReversed = carrinho.pedidos.reversed.toList();
+                  if (index >= pedidosReversed.length) {
+                    return const SizedBox.shrink();
+                  }
+                  
+                  final pedido = pedidosReversed[index];
+                  return _buildPedidoCard(context, pedido, carrinho);
+                } catch (e) {
+                  print('Erro ao construir item do pedido no índice $index: $e');
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Erro ao carregar pedido',
+                        style: TextStyle(color: Colors.red.shade600),
+                      ),
+                    ),
+                  );
+                }
               },
             ),
           );
@@ -94,44 +133,45 @@ class PedidosScreen extends StatelessWidget {
   }
 
   Widget _buildPedidoCard(BuildContext context, Pedido pedido, CarrinhoProvider carrinho) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Cabeçalho do pedido
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Pedido #${pedido.id.substring(0, 8)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+    try {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Cabeçalho do pedido
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pedido #${pedido.id.length > 8 ? pedido.id.substring(0, 8) : pedido.id}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _formatarData(pedido.dataHora),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatarData(pedido.dataHora),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                _buildStatusChip(pedido.status),
-              ],
-            ),
+                    ],
+                  ),
+                  _buildStatusChip(pedido.status),
+                ],
+              ),
             
             const SizedBox(height: 12),
             
@@ -206,13 +246,15 @@ class PedidosScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            ...pedido.itens.map((item) => Padding(
+            ...pedido.itens.map((item) {
+              try {
+                return Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Row(
                     children: [
                       Expanded(
                         child: Text(
-                          '${item.quantidade}x ${item.pizza.nome} (${item.pizza.tamanho})',
+                          '${item.quantidade}x ${item.pizza.nome}${item.pizza.tamanho.isNotEmpty ? ' (${item.pizza.tamanho})' : ''}',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade800,
@@ -229,7 +271,21 @@ class PedidosScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                )),
+                );
+              } catch (e) {
+                print('Erro ao renderizar item: $e');
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    'Item com erro de carregamento',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.red.shade600,
+                    ),
+                  ),
+                );
+              }
+            }).toList(),
             
             const Divider(),
             
@@ -281,6 +337,40 @@ class PedidosScreen extends StatelessWidget {
         ),
       ),
     );
+    } catch (e) {
+      print('Erro ao construir card do pedido: $e');
+      return Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: Colors.red.shade600,
+                size: 32,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Erro ao carregar pedido',
+                style: TextStyle(
+                  color: Colors.red.shade600,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'ID: ${pedido.id}',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildStatusChip(StatusPedido status) {

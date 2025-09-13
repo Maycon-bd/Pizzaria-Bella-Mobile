@@ -42,18 +42,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (mounted) {
       final carrinho = Provider.of<CarrinhoProvider>(context, listen: false);
       
-      carrinho.finalizarPedido(
-        nomeCliente: _nomeController.text,
-        telefone: _telefoneController.text,
-        endereco: _enderecoController.text,
-      );
+      try {
+        await carrinho.finalizarPedido(
+          nomeCliente: _nomeController.text,
+          telefone: _telefoneController.text,
+          endereco: _enderecoController.text,
+        );
 
-      setState(() {
-        _isLoading = false;
-      });
+        setState(() {
+          _isLoading = false;
+        });
 
-      // Mostrar diálogo de sucesso
-      _mostrarDialogoSucesso();
+        // Mostrar diálogo de sucesso
+        _mostrarDialogoSucesso();
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        // Mostrar erro mas informar que o pedido foi salvo localmente
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Pedido salvo localmente. Erro na sincronização: $e'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        
+        // Ainda mostra o diálogo de sucesso pois o pedido foi salvo localmente
+        _mostrarDialogoSucesso();
+      }
     }
   }
 

@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.5
   uuid: ^4.5.1
+  dio: ^5.3.3  # Para chamadas HTTP robustas com interceptors
 
 dev_dependencies:
   flutter_test:

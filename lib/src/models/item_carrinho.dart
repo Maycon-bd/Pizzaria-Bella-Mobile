@@ -50,4 +50,29 @@ class ItemCarrinho {
 
   @override
   int get hashCode => id.hashCode;
+
+  /// Factory constructor para criar ItemCarrinho a partir de JSON da API
+  factory ItemCarrinho.fromJson(Map<String, dynamic> json) {
+    return ItemCarrinho(
+      id: json['id']?.toString() ?? '',
+      pizza: Pizza.fromJson(json['pizza'] ?? {}),
+      quantidade: json['quantidade']?.toInt() ?? 1,
+      ingredientesExtras: json['ingredientesExtras'] != null
+          ? List<String>.from(json['ingredientesExtras'])
+          : <String>[],
+      observacoes: json['observacoes']?.toString() ?? '',
+    );
+  }
+
+  /// Converte ItemCarrinho para JSON para envio à API
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'pizza': pizza.toJson(),
+      'quantidade': quantidade,
+      'ingredientesExtras': ingredientesExtras,
+      'observacoes': observacoes,
+      'precoTotal': precoTotal,
+    };
+  }
 }

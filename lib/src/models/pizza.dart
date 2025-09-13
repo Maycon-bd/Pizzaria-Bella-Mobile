@@ -17,6 +17,27 @@ class Pizza {
     this.tamanho = 'Média',
   });
 
+  /// Factory constructor para criar Pizza a partir de JSON da API (CORRIGIDO)
+  factory Pizza.fromJson(Map<String, dynamic> json) {
+    return Pizza(
+      // A API envia 'id' (um número), então convertemos para String.
+      id: json['id'].toString(),
+
+      nome: json['nome'] as String,
+      descricao: json['descricao'] as String,
+      preco: (json['preco'] as num).toDouble(),
+      
+      // A API envia 'imagem', nós o atribuímos à nossa propriedade 'imagemUrl'.
+      imagemUrl: json['imagem'] as String, 
+
+      // A API envia 'ingredientes', está correto.
+      ingredientes: List<String>.from(json['ingredientes']),
+
+      // A API não envia 'tamanho', então usamos o valor padrão 'Média' do construtor.
+      tamanho: json['tamanho'] ?? 'Média',
+    );
+  }
+
   Pizza copyWith({
     String? id,
     String? nome,
@@ -35,6 +56,19 @@ class Pizza {
       ingredientes: ingredientes ?? this.ingredientes,
       tamanho: tamanho ?? this.tamanho,
     );
+  }
+
+  /// Converte Pizza para JSON para envio à API
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nome': nome,
+      'descricao': descricao,
+      'preco': preco,
+      'imagemUrl': imagemUrl,
+      'ingredientes': ingredientes,
+      'tamanho': tamanho,
+    };
   }
 
   @override

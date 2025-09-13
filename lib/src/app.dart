@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/carrinho_provider.dart';
+import 'providers/cardapio_provider.dart';
 import 'screens/main_screen.dart';
 import 'screens/pizza_details_screen.dart';
 import 'screens/checkout_screen.dart';
@@ -12,8 +13,11 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => CarrinhoProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => CarrinhoProvider()),
+        ChangeNotifierProvider(create: (context) => CardapioProvider()),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Pizzaria Flutter',
