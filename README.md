@@ -1,4 +1,172 @@
-# 📱 Pizzaria App - Conceitos Flutter Implementados
+# 🍕 Pizzaria Bella Mobile App
+
+Aplicativo mobile completo para pizzaria desenvolvido em Flutter, com integração de API e sistema de fallback local.
+
+## ✨ Funcionalidades
+
+- 📱 **Interface Moderna**: Design responsivo e intuitivo
+- 🍕 **Cardápio Dinâmico**: Carregamento via API com fallback local
+- 🛒 **Carrinho de Compras**: Adicionar, remover e gerenciar pedidos
+- 📦 **Sistema de Pedidos**: Finalização e acompanhamento de pedidos
+- 🔄 **Modo Offline**: Funciona mesmo sem conexão com a API
+- 💾 **Persistência**: Dados salvos localmente e sincronizados com API
+
+## 🚀 Tecnologias Utilizadas
+
+- **Flutter 3.24.5**: Framework principal
+- **Provider**: Gerenciamento de estado
+- **HTTP**: Comunicação com API REST
+- **Material Design**: Interface de usuário
+
+## 📋 Pré-requisitos
+
+- Flutter SDK (versão 3.24.5 ou superior)
+- Dart SDK
+- Android Studio / VS Code
+- Emulador Android ou dispositivo físico
+
+## 🛠️ Instalação e Execução
+
+1. **Clone o repositório**:
+   ```bash
+   git clone https://github.com/Maycon-bd/Pizzaria-Bella-Mobile.git
+   cd Pizzaria-Bella-Mobile
+   ```
+
+2. **Instale as dependências**:
+   ```bash
+   flutter pub get
+   ```
+
+3. **Execute o aplicativo**:
+   ```bash
+   flutter run
+   ```
+
+## 🏗️ Estrutura do Projeto
+
+```
+lib/
+├── src/
+│   ├── models/          # Modelos de dados
+│   │   ├── pizza.dart
+│   │   ├── pedido.dart
+│   │   └── item_carrinho.dart
+│   ├── providers/       # Gerenciamento de estado
+│   │   ├── cardapio_provider.dart
+│   │   └── carrinho_provider.dart
+│   ├── screens/         # Telas do aplicativo
+│   │   ├── home_screen.dart
+│   │   ├── checkout_screen.dart
+│   │   └── pedidos_screen.dart
+│   ├── services/        # Serviços e APIs
+│   │   └── api_service.dart
+│   ├── data/           # Dados locais
+│   │   └── pizzas_data.dart
+│   └── app.dart        # Configuração principal
+└── main.dart           # Ponto de entrada
+```
+
+## 🔧 Configuração da API
+
+O aplicativo está configurado para se conectar com uma API REST. Para alterar a URL da API, edite o arquivo `lib/src/services/api_service.dart`:
+
+```dart
+class ApiService {
+  static const String baseUrl = 'http://SEU_IP:3000'; // Altere aqui
+  // ...
+}
+```
+
+## 📱 Funcionalidades Detalhadas
+
+### Cardápio
+- Carregamento automático via API
+- Fallback para dados locais quando API indisponível
+- Indicador visual de modo offline
+- Refresh manual disponível
+
+### Carrinho
+- Adicionar pizzas com quantidades personalizadas
+- Calcular total automaticamente
+- Persistência entre sessões
+- Validação antes da finalização
+
+### Pedidos
+- Finalização via API
+- Histórico de pedidos
+- Status de acompanhamento
+- Sincronização automática
+
+## 🔄 Sistema de Fallback
+
+O aplicativo possui um sistema inteligente de fallback:
+
+1. **Primeira tentativa**: Busca dados na API
+2. **Em caso de erro**: Carrega dados locais automaticamente
+3. **Indicação visual**: Banner informativo sobre modo offline
+4. **Retry automático**: Tenta reconectar em operações futuras
+
+## 🧪 Testes
+
+Para executar os testes:
+
+```bash
+# Testes unitários
+flutter test
+
+# Análise de código
+flutter analyze
+
+# Formatação de código
+flutter format .
+```
+
+## 📦 Build para Produção
+
+### Android
+```bash
+flutter build apk --release
+# ou
+flutter build appbundle --release
+```
+
+### iOS
+```bash
+flutter build ios --release
+```
+
+## 🤝 Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 👨‍💻 Autor
+
+**Maycon** - [GitHub](https://github.com/Maycon-bd)
+
+## 📞 Suporte
+
+Se você encontrar algum problema ou tiver sugestões, por favor:
+
+1. Verifique se já existe uma [issue](https://github.com/Maycon-bd/Pizzaria-Bella-Mobile/issues) similar
+2. Se não existir, crie uma nova issue com detalhes do problema
+3. Para dúvidas gerais, use as [Discussions](https://github.com/Maycon-bd/Pizzaria-Bella-Mobile/discussions)
+
+---
+
+**🍕 Feito com ❤️ para a Pizzaria Bella**
+
+---
+
+# 📱 Conceitos Flutter Implementados
 
 Este projeto demonstra a implementação de diversos conceitos fundamentais do Flutter através de um aplicativo de pizzaria completo e funcional.
 
